@@ -1,0 +1,21 @@
+name: keepalive
+# GitHub disables scheduled workflows in repos with no activity for 60 days.
+# One tiny commit a month keeps acks-ping alive.
+on:
+  schedule:
+    - cron: '17 4 1 * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          date -u > .keepalive
+          git config user.name keepalive-bot
+          git config user.email keepalive-bot@users.noreply.github.com
+          git add .keepalive
+          git commit -m "keepalive $(date -u +%F)"
+          git push
