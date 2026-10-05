@@ -1,0 +1,19 @@
+name: acks-ping
+# Triggers /api/cron/acks of the WhatsApp agent every 5 minutes.
+# Replaces the scheduled task that ran on the old computer (05.10.2026).
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: flush due auto-replies
+        env:
+          ACKS_URL: ${{ secrets.ACKS_URL }}
+        run: |
+          code=$(curl -sS --max-time 60 -o /tmp/out.json -w '%{http_code}' "$ACKS_URL")
+          echo "HTTP $code"; head -c 400 /tmp/out.json | sed -E 's/"phone":"[0-9]+"/"phone":"***"/g'; echo
+          test "$code" = "200"
